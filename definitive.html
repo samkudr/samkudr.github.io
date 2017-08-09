@@ -1,0 +1,396 @@
+<html>
+
+<head>
+
+<title>Definitive Healthcare Feed</title>
+<meta http-equiv="Cache-Control" content="no-store" />
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="https://connectors.tableau.com/libs/tableauwdc-2.2.latest.js" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+(function () {
+
+	var myConnector = tableau.makeConnector();
+	
+	myConnector.getSchema = function (schemaCallback) {
+
+		var hospitalTable = {
+			id: "Hospital",
+			columns: [
+				{id: "Id", dataType: tableau.dataTypeEnum.int},
+				{id: "Name", dataType: tableau.dataTypeEnum.string},
+				{id: "FirmType", dataType: tableau.dataTypeEnum.string},
+				{id: "WebSite", dataType: tableau.dataTypeEnum.string},
+				{id: "Description", dataType: tableau.dataTypeEnum.string},
+				{id: "Address", dataType: tableau.dataTypeEnum.string},
+				{id: "Address1", dataType: tableau.dataTypeEnum.string},
+				{id: "HQCity", dataType: tableau.dataTypeEnum.string},
+				{id: "State", dataType: tableau.dataTypeEnum.string},
+				{id: "Zip", dataType: tableau.dataTypeEnum.string},
+				{id: "CountryCode", dataType: tableau.dataTypeEnum.string},
+				{id: "Phone", dataType: tableau.dataTypeEnum.string},
+				{id: "NetPatientRev", dataType: tableau.dataTypeEnum.int},
+				{id: "NetworkId", dataType: tableau.dataTypeEnum.int},
+				{id: "NetworkParentId", dataType: tableau.dataTypeEnum.int},
+				{id: "NetworkName", dataType: tableau.dataTypeEnum.string},
+				{id: "NetworkParentName", dataType: tableau.dataTypeEnum.string},
+				{id: "NumEmployees", dataType: tableau.dataTypeEnum.int},
+				{id: "NumBeds", dataType: tableau.dataTypeEnum.int},
+				{id: "CashOnHand", dataType: tableau.dataTypeEnum.int},
+				{id: "EMRVendorAmbulatory", dataType: tableau.dataTypeEnum.string},
+				{id: "EMRVendorInpatient", dataType: tableau.dataTypeEnum.string},
+				{id: "MeaningfulUseStatus", dataType: tableau.dataTypeEnum.string},
+				{id: "NumOperatingRooms", dataType: tableau.dataTypeEnum.int},
+				{id: "NumDischarges", dataType: tableau.dataTypeEnum.int},
+				{id: "OperatingIncome", dataType: tableau.dataTypeEnum.float},
+				{id: "MedicareProviderNumber", dataType: tableau.dataTypeEnum.string},
+				{id: "PayorMixPctMedicaid", dataType: tableau.dataTypeEnum.float},
+				{id: "PayorMixPctMedicare", dataType: tableau.dataTypeEnum.float},
+				{id: "PayorMixPctPrivateSelf", dataType: tableau.dataTypeEnum.float},
+				{id: "AffiliationsGPO", dataType: tableau.dataTypeEnum.string},
+				{id: "AffiliationsACO", dataType: tableau.dataTypeEnum.string},
+				{id: "DHCProfile", dataType: tableau.dataTypeEnum.string},
+				{id: "StateAbbr", dataType: tableau.dataTypeEnum.string},
+				{id: "FirmTypeId", dataType: tableau.dataTypeEnum.int},
+				{id: "StateFull", dataType: tableau.dataTypeEnum.string},
+				{id: "FinancialDataDate", dataType: tableau.dataTypeEnum.datetime},
+				{id: "NPINumber", dataType: tableau.dataTypeEnum.string},
+				{id: "NumHospitals", dataType: tableau.dataTypeEnum.int},
+				{id: "Births", dataType: tableau.dataTypeEnum.float},
+				{id: "ACOType", dataType: tableau.dataTypeEnum.string},
+				{id: "ACOStartDate", dataType: tableau.dataTypeEnum.datetime},
+				{id: "ACOPatientPopulation", dataType: tableau.dataTypeEnum.int},
+				{id: "ACONumPhysicians", dataType: tableau.dataTypeEnum.int},
+				{id: "NetMedicaidRev", dataType: tableau.dataTypeEnum.float},
+				{id: "NetMedicareRev", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalOperatingExpenses", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalSalaries", dataType: tableau.dataTypeEnum.float},
+				{id: "NetIncome", dataType: tableau.dataTypeEnum.float},
+				{id: "NetIncomeMargin", dataType: tableau.dataTypeEnum.float},
+				{id: "EBITDA", dataType: tableau.dataTypeEnum.float},
+				{id: "TempInvestments", dataType: tableau.dataTypeEnum.float},
+				{id: "AccountsReceivable", dataType: tableau.dataTypeEnum.float},
+				{id: "DaysSalesOutstanding", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalFixedAssets", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalAssets", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalCurrentLiabilities", dataType: tableau.dataTypeEnum.float},
+				{id: "LongTermLiabilities", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalLiabilities", dataType: tableau.dataTypeEnum.float},
+				{id: "CurrentRatio", dataType: tableau.dataTypeEnum.float},
+				{id: "QuickRatioTest", dataType: tableau.dataTypeEnum.float},
+				{id: "BadDebt", dataType: tableau.dataTypeEnum.float},
+				{id: "BadDebtNPRRatio", dataType: tableau.dataTypeEnum.float},
+				{id: "MeaningfulUsePayment", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalDirectPremiumEarned", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalCoveredLives", dataType: tableau.dataTypeEnum.float},
+				{id: "TotalInccuredClaims", dataType: tableau.dataTypeEnum.float},
+				{id: "ITOperatingSpend", dataType: tableau.dataTypeEnum.float},
+				{id: "ITCapitalSpend", dataType: tableau.dataTypeEnum.float},
+				{id: "NetOperatingMargin", dataType: tableau.dataTypeEnum.float},
+				{id: "DSHPaymentMedicare", dataType: tableau.dataTypeEnum.float},
+				{id: "ReadmissionRatePenaltyFY2015", dataType: tableau.dataTypeEnum.float},
+				{id: "ReadmissionRatePenaltyFY2014", dataType: tableau.dataTypeEnum.float},
+				{id: "ReadmissionRatePenaltyFY2013", dataType: tableau.dataTypeEnum.float},
+				{id: "VBPPercentageFY2014", dataType: tableau.dataTypeEnum.float},
+				{id: "VBPPercentageFY2013", dataType: tableau.dataTypeEnum.float},
+				{id: "ASCNumberClaims", dataType: tableau.dataTypeEnum.float},
+				{id: "ASCTotalCharges", dataType: tableau.dataTypeEnum.float},
+				{id: "ASCChargePerClaim", dataType: tableau.dataTypeEnum.float},
+				{id: "ASCChargePerClaimNational", dataType: tableau.dataTypeEnum.float},
+				{id: "ASCChargePerClaimState", dataType: tableau.dataTypeEnum.float},
+				{id: "CPOE", dataType: tableau.dataTypeEnum.string},
+				{id: "HIS", dataType: tableau.dataTypeEnum.string},
+				{id: "PM", dataType: tableau.dataTypeEnum.string},
+				{id: "BI", dataType: tableau.dataTypeEnum.string},
+				{id: "CIS", dataType: tableau.dataTypeEnum.string},
+				{id: "EDIS", dataType: tableau.dataTypeEnum.string},
+				{id: "SURG", dataType: tableau.dataTypeEnum.string},
+				{id: "CARECOOR", dataType: tableau.dataTypeEnum.string},
+				{id: "PDOC", dataType: tableau.dataTypeEnum.string},
+				{id: "RIS", dataType: tableau.dataTypeEnum.string},
+				{id: "PACS", dataType: tableau.dataTypeEnum.string},
+				{id: "LIS", dataType: tableau.dataTypeEnum.string},
+				{id: "PHARMA", dataType: tableau.dataTypeEnum.string},
+				{id: "HIE", dataType: tableau.dataTypeEnum.string},
+				{id: "EDM", dataType: tableau.dataTypeEnum.string},
+				{id: "PATACCESS", dataType: tableau.dataTypeEnum.string},
+				{id: "PATACCOUNT", dataType: tableau.dataTypeEnum.string},
+				{id: "RCM", dataType: tableau.dataTypeEnum.string},
+				{id: "TRANSC", dataType: tableau.dataTypeEnum.string},
+				{id: "CODE", dataType: tableau.dataTypeEnum.string},
+				{id: "FiscalYearEnd", dataType: tableau.dataTypeEnum.string},
+				{id: "MedSchlAffiliation", dataType: tableau.dataTypeEnum.string},
+				{id: "MainSpecialty", dataType: tableau.dataTypeEnum.string},
+				{id: "OtherSpecialties", dataType: tableau.dataTypeEnum.string},
+				{id: "PGNumPhysicians", dataType: tableau.dataTypeEnum.int},
+				{id: "PGNumProcs", dataType: tableau.dataTypeEnum.int},
+				{id: "PGMedicareChargeAmt", dataType: tableau.dataTypeEnum.float},
+				{id: "PGMedicarePaymentAmt", dataType: tableau.dataTypeEnum.float},
+				{id: "PGHospAffiliationId1", dataType: tableau.dataTypeEnum.int},
+				{id: "PGHospAffiliationName1", dataType: tableau.dataTypeEnum.string},
+				{id: "PGHospAffiliationId2", dataType: tableau.dataTypeEnum.int},
+				{id: "PGHospAffiliationName2", dataType: tableau.dataTypeEnum.string},
+				{id: "PGHospAffiliationId3", dataType: tableau.dataTypeEnum.int},
+				{id: "PGHospAffiliationName3", dataType: tableau.dataTypeEnum.string},
+				{id: "DaysCashOnHand", dataType: tableau.dataTypeEnum.float},
+				{id: "HospitalOwnership", dataType: tableau.dataTypeEnum.string},
+				{id: "NumAffiliatedPhysicians", dataType: tableau.dataTypeEnum.int},
+				{id: "NumBedsMedicare", dataType: tableau.dataTypeEnum.int},
+				{id: "MedicareCharges", dataType: tableau.dataTypeEnum.float},
+				{id: "AvgLengthOfStay", dataType: tableau.dataTypeEnum.float},
+				{id: "DateEntered", dataType: tableau.dataTypeEnum.datetime},
+				{id: "AvgDailyCensus", dataType: tableau.dataTypeEnum.float},
+				{id: "HIEAffiliations", dataType: tableau.dataTypeEnum.string},
+				{id: "HospitalType", dataType: tableau.dataTypeEnum.string},
+				{id: "PctHLngPrUlc", dataType: tableau.dataTypeEnum.float},
+				{id: "PctLngFallsMajInj", dataType: tableau.dataTypeEnum.float},
+				{id: "PctLngMoveWorse", dataType: tableau.dataTypeEnum.float},
+				{id: "PctongCatLeftBlad", dataType: tableau.dataTypeEnum.float},
+				{id: "PctLngUti", dataType: tableau.dataTypeEnum.float},
+				{id: "PctLowLongCtrl", dataType: tableau.dataTypeEnum.float},
+				{id: "PctShortImpFcn", dataType: tableau.dataTypeEnum.float},
+				{id: "PctSortPrNewWorse", dataType: tableau.dataTypeEnum.float},
+				{id: "TotDys", dataType: tableau.dataTypeEnum.float},
+				{id: "BedDysAvail", dataType: tableau.dataTypeEnum.float},
+				{id: "NumDishTitleXVIII", dataType: tableau.dataTypeEnum.float},
+				{id: "OverallRat", dataType: tableau.dataTypeEnum.string},
+				{id: "QaulRat", dataType: tableau.dataTypeEnum.string},
+				{id: "StaffRat", dataType: tableau.dataTypeEnum.string},
+				{id: "RnStaffRat", dataType: tableau.dataTypeEnum.string},
+				{id: "HealthInspctRat", dataType: tableau.dataTypeEnum.string},
+				{id: "TotErVisits", dataType: tableau.dataTypeEnum.float},
+				{id: "HQRegion", dataType: tableau.dataTypeEnum.string}
+			]
+		};
+
+		var executiveTable = {
+			id: "Executive",
+			columns: [
+				{id: "Id", dataType: tableau.dataTypeEnum.int},
+				{id: "LocId", dataType: tableau.dataTypeEnum.int},
+				{id: "HospitalId", dataType: tableau.dataTypeEnum.int},
+				{id: "DateEntered", dataType: tableau.dataTypeEnum.datetime},
+				{id: "ExecName", dataType: tableau.dataTypeEnum.string},
+				{id: "FirstName", dataType: tableau.dataTypeEnum.string},
+				{id: "LastName", dataType: tableau.dataTypeEnum.string},
+				{id: "Title", dataType: tableau.dataTypeEnum.string},
+				{id: "Bio", dataType: tableau.dataTypeEnum.string},
+				{id: "Phone", dataType: tableau.dataTypeEnum.string},
+				{id: "Email", dataType: tableau.dataTypeEnum.string},
+				{id: "DocFlag", dataType: tableau.dataTypeEnum.string},
+				{id: "Gender", dataType: tableau.dataTypeEnum.string},
+				{id: "Prefix", dataType: tableau.dataTypeEnum.string},
+				{id: "Suffix", dataType: tableau.dataTypeEnum.string},
+				{id: "GroupedTitle", dataType: tableau.dataTypeEnum.string},
+				{id: "FirmType", dataType: tableau.dataTypeEnum.string},
+				{id: "FuncGroup", dataType: tableau.dataTypeEnum.string},
+				{id: "PositionLevel", dataType: tableau.dataTypeEnum.string},
+				{id: "LocPhone", dataType: tableau.dataTypeEnum.string},
+				{id: "CombinedPhone", dataType: tableau.dataTypeEnum.string},
+				{id: "PositionLevelCode", dataType: tableau.dataTypeEnum.string},
+				{id: "HimTitle", dataType: tableau.dataTypeEnum.string},
+				{id: "RevenueCycleTitle", dataType: tableau.dataTypeEnum.string},
+				{id: "ComplianceTitle", dataType: tableau.dataTypeEnum.string},
+				{id: "RecordChangedDate", dataType: tableau.dataTypeEnum.datetime},
+				{id: "LinkedInProfile", dataType: tableau.dataTypeEnum.string},
+				{id: "HQAddress", dataType: tableau.dataTypeEnum.string},
+				{id: "HQAddress1", dataType: tableau.dataTypeEnum.string},
+				{id: "HQCity", dataType: tableau.dataTypeEnum.string},
+				{id: "HQState", dataType: tableau.dataTypeEnum.string},
+				{id: "HQStateAbbr", dataType: tableau.dataTypeEnum.string},
+				{id: "HQCountryCode", dataType: tableau.dataTypeEnum.string},
+				{id: "HQStateFull", dataType: tableau.dataTypeEnum.string},
+				{id: "HQZipCode", dataType: tableau.dataTypeEnum.string},
+				{id: "Website", dataType: tableau.dataTypeEnum.string},
+				{id: "CompanyName", dataType: tableau.dataTypeEnum.string},
+				{id: "FunctionalGroupId", dataType: tableau.dataTypeEnum.int}
+			]
+		};
+
+		var financialTable = {
+			id: "HospitalFinancial",
+			columns: [
+				{id: "HospitalId", dataType: tableau.dataTypeEnum.int},
+				{id: "TotPatRev", dataType: tableau.dataTypeEnum.int},
+				{id: "PctPatDis", dataType: tableau.dataTypeEnum.float},
+				{id: "AlwForUnclct", dataType: tableau.dataTypeEnum.float},
+				{id: "TotCurtAss", dataType: tableau.dataTypeEnum.int},
+				{id: "TotOthAss", dataType: tableau.dataTypeEnum.int},
+				{id: "CstPerDCCMIAdj", dataType: tableau.dataTypeEnum.float},
+				{id: "CstPerDCCMIAdjSt", dataType: tableau.dataTypeEnum.float},
+				{id: "CstPerDCCMIWageAdj", dataType: tableau.dataTypeEnum.float},
+				{id: "CstPerDCCMIWageAdjSt", dataType: tableau.dataTypeEnum.float},
+				{id: "TotConLbr", dataType: tableau.dataTypeEnum.float},
+				{id: "TotFriBen", dataType: tableau.dataTypeEnum.float},
+				{id: "LabCompRat", dataType: tableau.dataTypeEnum.float},
+				{id: "TotOverCsts", dataType: tableau.dataTypeEnum.int},
+				{id: "DepExp", dataType: tableau.dataTypeEnum.float},
+				{id: "GenFndBal", dataType: tableau.dataTypeEnum.int},
+				{id: "LiabFndBal", dataType: tableau.dataTypeEnum.float},
+				{id: "DbtToEquRat", dataType: tableau.dataTypeEnum.float},
+				{id: "BadDebtARRat", dataType: tableau.dataTypeEnum.float},
+				{id: "CMI", dataType: tableau.dataTypeEnum.float},
+				{id: "CmiMed", dataType: tableau.dataTypeEnum.float},
+				{id: "CmiSur", dataType: tableau.dataTypeEnum.float},
+				{id: "MccCcRat", dataType: tableau.dataTypeEnum.float},
+				{id: "BedUti", dataType: tableau.dataTypeEnum.float},
+				{id: "AdjPatDays", dataType: tableau.dataTypeEnum.float},
+				{id: "EstErVisAdm", dataType: tableau.dataTypeEnum.float},
+				{id: "InpSurg", dataType: tableau.dataTypeEnum.int},
+				{id: "NumIntRes", dataType: tableau.dataTypeEnum.int},
+				{id: "LbrDelDaysInp", dataType: tableau.dataTypeEnum.float},
+				{id: "NrsryDays", dataType: tableau.dataTypeEnum.int},
+				{id: "TotFacSqFt", dataType: tableau.dataTypeEnum.float},
+				{id: "OpRmSqFt", dataType: tableau.dataTypeEnum.float},
+				{id: "DelRmSqFt", dataType: tableau.dataTypeEnum.float},
+				{id: "LabSqFt", dataType: tableau.dataTypeEnum.float},
+				{id: "InpSqFt", dataType: tableau.dataTypeEnum.float},
+				{id: "UnrMcaidCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "UnrOthStLoGovIndCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "ChaCareChr", dataType: tableau.dataTypeEnum.float},
+				{id: "ChCareCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "UncCareCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "TotUncCareUnrCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "PatDis", dataType: tableau.dataTypeEnum.int},
+				{id: "ItOpSpd", dataType: tableau.dataTypeEnum.float},
+				{id: "QuickRat", dataType: tableau.dataTypeEnum.float},
+				{id: "TotDays", dataType: tableau.dataTypeEnum.float},
+				{id: "InpPrtCDays", dataType: tableau.dataTypeEnum.float},
+				{id: "EstTotClaimsOtp", dataType: tableau.dataTypeEnum.int},
+				{id: "NumDenClmMcare", dataType: tableau.dataTypeEnum.float},
+				{id: "PctDenClmsMcare", dataType: tableau.dataTypeEnum.float},
+				{id: "TotOthInc", dataType: tableau.dataTypeEnum.int},
+				{id: "DshPayMcare", dataType: tableau.dataTypeEnum.float},
+				{id: "AlwDsh", dataType: tableau.dataTypeEnum.float},
+				{id: "ReAdmiRatPnltyFy2016", dataType: tableau.dataTypeEnum.float},
+				{id: "EstReAdmiPnltyFy2016", dataType: tableau.dataTypeEnum.float},
+				{id: "VbpPctFy2016", dataType: tableau.dataTypeEnum.float},
+				{id: "EstVbpAdjFy2016", dataType: tableau.dataTypeEnum.float},
+				{id: "LndryLinenCst", dataType: tableau.dataTypeEnum.float},
+				{id: "HacPnltyFy2016", dataType: tableau.dataTypeEnum.float},
+				{id: "EstHacPnltyFy2016", dataType: tableau.dataTypeEnum.float},
+				{id: "MningflUsePymnt", dataType: tableau.dataTypeEnum.float},
+				{id: "HouseKpingCst", dataType: tableau.dataTypeEnum.float},
+				{id: "DtryCst", dataType: tableau.dataTypeEnum.float},
+				{id: "SplyCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "TotSplyCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "PhrmcyCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "OtpSqFt", dataType: tableau.dataTypeEnum.float},
+				{id: "AvgAgePlnt", dataType: tableau.dataTypeEnum.float},
+				{id: "PctSsiToPrtADays", dataType: tableau.dataTypeEnum.float},
+				{id: "PctMcaidToTotDays", dataType: tableau.dataTypeEnum.float},
+				{id: "NonMcareNonReimbBadDbtCsts", dataType: tableau.dataTypeEnum.float},
+				{id: "ReAdmiReduAdjFy2017", dataType: tableau.dataTypeEnum.float},
+				{id: "ReAdmiReduPnltyFy2017", dataType: tableau.dataTypeEnum.float},
+				{id: "VBPPcntFy2017", dataType: tableau.dataTypeEnum.float},
+				{id: "VBPPAdjFy2017", dataType: tableau.dataTypeEnum.float},
+				{id: "AccrAgn", dataType: tableau.dataTypeEnum.string},
+				{id: "EstReAdmiReduAdjFy2013", dataType: tableau.dataTypeEnum.float},
+				{id: "EstVBPAdjFy2013", dataType: tableau.dataTypeEnum.float},
+				{id: "EstReAdmiReduAdjFy2014", dataType: tableau.dataTypeEnum.float},
+				{id: "EstVBPAdjFy2014", dataType: tableau.dataTypeEnum.float},
+				{id: "EstHACPnltyFy2015", dataType: tableau.dataTypeEnum.float},
+				{id: "EstReAdmiPnltyFy2015", dataType: tableau.dataTypeEnum.float},
+				{id: "EstVBPAdjFy2015", dataType: tableau.dataTypeEnum.float},
+				{id: "EstHACPnltyFy2017", dataType: tableau.dataTypeEnum.float},
+				{id: "HACPnltyFy2017", dataType: tableau.dataTypeEnum.float}
+			]
+		};
+		
+		schemaCallback([hospitalTable, executiveTable, financialTable]);
+	};
+
+	myConnector.getData = function (table, doneCallback) {
+		var conData = JSON.parse(tableau.connectionData);
+		var defId = conData["defId"];
+		var bearer = conData["access_token"];
+		var requestUrl;
+		if (table.tableInfo.id == "Hospital")
+			requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId + ")";
+		else if (table.tableInfo.id == "Executive")
+			requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId + ")?$expand=Executives";
+		else if (table.tableInfo.id == "HospitalFinancial")
+			requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId + ")?$expand=Fin";
+		else
+			return;
+		
+		$.ajax({
+			url: requestUrl,
+			type: 'GET',
+			dataType: 'json',
+			beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
+			error: function(){ alert("Fetch error."); },
+			success: function(requestData){
+				if (table.tableInfo.id == "Hospital")
+				{
+					table.appendRows([requestData]);
+				}
+				else if (table.tableInfo.id == "Executive")
+				{
+					table.appendRows(requestData["Executives"]);
+				}
+				else if (table.tableInfo.id == "HospitalFinancial")
+				{
+					table.appendRows([requestData["Fin"]]);
+				}
+				doneCallback();
+				}
+			});
+	};
+
+	tableau.registerConnector(myConnector);
+
+	$(document).ready(function () {
+		$("#userName")[0].value = "";
+		$("#userPassword")[0].value = "";
+		$("#defId")[0].value = "";
+
+
+		$("#submitButton").click(function () {
+			
+		var userName = $("#userName").val().trim();
+		var userPassword = $("#userPassword").val().trim();
+		var defId = $("#defId").val().trim();
+		$.ajax({
+			url: 'https://api.defhc.com/v4/token',
+			type: 'POST',
+			dataType: 'json',
+			data: 'grant_type=password&username=' + userName + '&password=' + userPassword,
+			error: function() { alert('Authentication error!'); },
+			success: function(data) {
+				data['defId'] = defId;
+				tableau.connectionName = "Definitive Healthcare Feed";
+				tableau.connectionData = JSON.stringify(data);
+				tableau.submit();
+				}
+			});
+		
+		});
+	});
+
+})();
+</script>
+
+
+</head>
+
+<body>
+
+<div class="container container-table">
+	<div class="row vertical-center-row">
+		<div class="text-center col-md-4 col-md-offset-4">
+			<label class="control-label">User Name</label><input type="text" id="userName" class="form-control">
+			<label class="control-label">Password</label><input type="password" id="userPassword" class="form-control">
+			<label class="control-label">Definitive ID</label><input type="text" id="defId" class="form-control">
+			<button type="button" id="submitButton" class="btn btn-success" style="margin: 10px;">Get Data!</button>
+		</div>
+	</div>
+</div>
+
+</body>
+
+</html>

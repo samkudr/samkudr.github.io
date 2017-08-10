@@ -301,7 +301,53 @@
 			]
 		};
 		
-		schemaCallback([hospitalTable, executiveTable, financialTable]);
+		var rfpTable = {
+			id: "RFPs",
+			columns: [
+				{id: "Id", dataType: tableau.dataTypeEnum.int},
+				{id: "HospitalId", dataType: tableau.dataTypeEnum.int},
+				{id: "NameOfIssuer", dataType: tableau.dataTypeEnum.string},
+				{id: "Title", dataType: tableau.dataTypeEnum.string},
+				{id: "DateDue", dataType: tableau.dataTypeEnum.datetime},
+				{id: "DateModified", dataType: tableau.dataTypeEnum.datetime},
+				{id: "DateEntered", dataType: tableau.dataTypeEnum.datetime},
+				{id: "Description", dataType: tableau.dataTypeEnum.string},
+				{id: "RFPIdentifier", dataType: tableau.dataTypeEnum.string},
+				{id: "RFPType", dataType: tableau.dataTypeEnum.string},
+				{id: "Category1", dataType: tableau.dataTypeEnum.string},
+				{id: "CategoryBroad", dataType: tableau.dataTypeEnum.string},
+				{id: "Website", dataType: tableau.dataTypeEnum.string},
+				{id: "CategoryImportant", dataType: tableau.dataTypeEnum.string},
+				{id: "ContactName", dataType: tableau.dataTypeEnum.string},
+				{id: "ContactEmail", dataType: tableau.dataTypeEnum.string},
+				{id: "ContactPhone", dataType: tableau.dataTypeEnum.string},
+				{id: "ContactTitle", dataType: tableau.dataTypeEnum.string},
+				{id: "SponsorName", dataType: tableau.dataTypeEnum.string}
+			]
+		};
+
+		var newsItemsTable = {
+			id: "NewsItems",
+			columns: [
+				{id: "Id", dataType: tableau.dataTypeEnum.int},
+				{id: "NewsEventDate", dataType: tableau.dataTypeEnum.datetime},
+				{id: "NewsEventTitle", dataType: tableau.dataTypeEnum.string},
+				{id: "NewsEventType", dataType: tableau.dataTypeEnum.string},
+				{id: "NewsEventDetails", dataType: tableau.dataTypeEnum.string},
+				{id: "HospitalId", dataType: tableau.dataTypeEnum.int},
+				{id: "HospitalName", dataType: tableau.dataTypeEnum.string},
+				{id: "FirmType", dataType: tableau.dataTypeEnum.string},
+				{id: "HQCity", dataType: tableau.dataTypeEnum.string},
+				{id: "HQState", dataType: tableau.dataTypeEnum.string},
+				{id: "FirstCompanyName", dataType: tableau.dataTypeEnum.string},
+				{id: "FirstCompanyProfile", dataType: tableau.dataTypeEnum.string},
+				{id: "SecondCompanyId", dataType: tableau.dataTypeEnum.int},
+				{id: "SecondCompanyName", dataType: tableau.dataTypeEnum.string},
+				{id: "SecondCompanyProfile", dataType: tableau.dataTypeEnum.string}
+			]
+		};
+
+		schemaCallback([hospitalTable, executiveTable, financialTable, rfpTable, newsItemsTable]);
 	};
 
 	myConnector.getData = function (table, doneCallback) {
@@ -323,6 +369,10 @@
 			expandSuffix = "?$expand=Executives";
 		else if (table.tableInfo.id == "HospitalFinancial")
 			expandSuffix = "?$expand=Fin";
+		else if (table.tableInfo.id == "RFPs")
+			expandSuffix = "?$expand=RFPs";
+		else if (table.tableInfo.id == "NewsItems")
+			expandSuffix = "?$expand=NewsItems";
 		else
 		{
 			tableau.abortWithError("Unknown table id.");
@@ -348,6 +398,10 @@
 								table.appendRows(requestData["Executives"]);
 							else if (table.tableInfo.id == "HospitalFinancial")
 								table.appendRows([requestData["Fin"]]);
+							else if (table.tableInfo.id == "RFPs")
+								table.appendRows(requestData["RFPs"]);
+							else if (table.tableInfo.id == "NewsItems")
+								table.appendRows(requestData["NewsItems"]);
 							resolve();
 							}
 						});

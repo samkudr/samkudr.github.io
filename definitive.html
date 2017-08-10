@@ -306,40 +306,55 @@
 
 	myConnector.getData = function (table, doneCallback) {
 		var conData = JSON.parse(tableau.connectionData);
-		var defId = conData["defId"];
+		var defIds = conData["defIds"];
 		var bearer = conData["access_token"];
-		var requestUrl;
-		if (table.tableInfo.id == "Hospital")
-			requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId + ")";
-		else if (table.tableInfo.id == "Executive")
-			requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId + ")?$expand=Executives";
-		else if (table.tableInfo.id == "HospitalFinancial")
-			requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId + ")?$expand=Fin";
-		else
-			return;
 		
-		$.ajax({
-			url: requestUrl,
-			type: 'GET',
-			dataType: 'json',
-			beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
-			error: function(){ alert("Fetch error."); },
-			success: function(requestData){
-				if (table.tableInfo.id == "Hospital")
+		var defIdsA = defIds.trim().split(",");
+		if (defIdsA.length == 0)
+		{
+			tableau.abortWithError("Please define at least one Definitive ID.");
+			return;
+		}
+
+		var expandSuffix = "";
+		if (table.tableInfo.id == "Hospital")
+			expandSuffix = "";
+		else if (table.tableInfo.id == "Executive")
+			expandSuffix = "?$expand=Executives";
+		else if (table.tableInfo.id == "HospitalFinancial")
+			expandSuffix = "?$expand=Fin";
+		else
+		{
+			tableau.abortWithError("Unknown table id.");
+			return;
+		}
+		
+		var getFetches = [];
+		for (let defId of defIdsA)
+		{
+			var getFetch = new Promise(function(resolve, reject)
 				{
-					table.appendRows([requestData]);
-				}
-				else if (table.tableInfo.id == "Executive")
-				{
-					table.appendRows(requestData["Executives"]);
-				}
-				else if (table.tableInfo.id == "HospitalFinancial")
-				{
-					table.appendRows([requestData["Fin"]]);
-				}
-				doneCallback();
-				}
-			});
+					var requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId.trim() + ")" + expandSuffix;
+					$.ajax({
+						url: requestUrl,
+						type: 'GET',
+						dataType: 'json',
+						beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
+						error: function(){ console.log("Fetch error."); reject(); },
+						success: function(requestData){
+							if (table.tableInfo.id == "Hospital")
+								table.appendRows([requestData]);
+							else if (table.tableInfo.id == "Executive")
+								table.appendRows(requestData["Executives"]);
+							else if (table.tableInfo.id == "HospitalFinancial")
+								table.appendRows([requestData["Fin"]]);
+							resolve();
+							}
+						});
+				});
+			getFetches.push(getFetch);
+		}
+		Promise.all(getFetches).then(function(values){ doneCallback(); });
 	};
 
 	tableau.registerConnector(myConnector);
@@ -347,22 +362,22 @@
 	$(document).ready(function () {
 		$("#userName")[0].value = "";
 		$("#userPassword")[0].value = "";
-		$("#defId")[0].value = "";
+		$("#defIds")[0].value = "";
 
 
 		$("#submitButton").click(function () {
 			
 		var userName = $("#userName").val().trim();
 		var userPassword = $("#userPassword").val().trim();
-		var defId = $("#defId").val().trim();
+		var defIds = $("#defIds").val();
 		$.ajax({
 			url: 'https://api.defhc.com/v4/token',
 			type: 'POST',
 			dataType: 'json',
 			data: 'grant_type=password&username=' + userName + '&password=' + userPassword,
-			error: function() { alert('Authentication error!'); },
+			error: function() { tableau.abortWithError('Authentication error!'); },
 			success: function(data) {
-				data['defId'] = defId;
+				data['defIds'] = defIds;
 				tableau.connectionName = "Definitive Healthcare Feed";
 				tableau.connectionData = JSON.stringify(data);
 				tableau.submit();
@@ -385,7 +400,7 @@
 		<div class="text-center col-md-4 col-md-offset-4">
 			<label class="control-label">User Name</label><input type="text" id="userName" class="form-control">
 			<label class="control-label">Password</label><input type="password" id="userPassword" class="form-control">
-			<label class="control-label">Definitive ID</label><input type="text" id="defId" class="form-control">
+			<label class="control-label">Definitive IDs (separate with comma)</label><input type="text" id="defIds" class="form-control">
 			<button type="button" id="submitButton" class="btn btn-success" style="margin: 10px;">Get Data!</button>
 		</div>
 	</div>

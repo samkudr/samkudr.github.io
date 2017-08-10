@@ -380,8 +380,9 @@
 		}
 		
 		var getFetches = [];
-		for (let defId of defIdsA)
+		for (var defIdsI = 0; defIdsI < defIdsA.length; defIdsI++)
 		{
+			var defId = defIdsA[defIdsI];
 			var getFetch = new Promise(function(resolve, reject)
 				{
 					var requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId.trim() + ")" + expandSuffix;

@@ -391,10 +391,11 @@
 						url: requestUrl,
 						type: 'GET',
 						dataType: 'json',
+						_hospId: defId,
 						beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
 						error: function(jqXHR, textStatus, errorThrown){
 							if (table.tableInfo.id == "Hospital")
-								table.appendRows([{"Id": defId.trim(), "Name": "Wrong ID"}]);
+								table.appendRows([{"Id": this["_hospId"], "Name": "Wrong ID"}]);
 							tableau.log("Fetch error: " + errorThrown);
 							resolve();
 							},

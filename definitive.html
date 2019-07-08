@@ -392,7 +392,12 @@
 						type: 'GET',
 						dataType: 'json',
 						beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
-						error: function(jqXHR, textStatus, errorThrown){ tableau.log("Fetch error: " + errorThrown); resolve(); },
+						error: function(jqXHR, textStatus, errorThrown){
+							if (table.tableInfo.id == "Hospital")
+								table.appendRows([{"Id": defId.trim(), "Name": "Wrong ID"}]);
+							tableau.log("Fetch error: " + errorThrown);
+							resolve();
+							},
 						success: function(requestData){
 							if (table.tableInfo.id == "Hospital")
 								table.appendRows([requestData]);

@@ -25,7 +25,7 @@
 			columns: [
 				{id: "id", dataType: tableau.dataTypeEnum.string},
 				{id: "queryParams", dataType: tableau.dataTypeEnum.string},
-				{id: "accessTime", dataType: tableau.dataTypeEnum.string},
+				{id: "accessTime", dataType: tableau.dataTypeEnum.datetime},
 				{id: "entity_datapointId", dataType: tableau.dataTypeEnum.int},
 				{id: "entity_datapointName", dataType: tableau.dataTypeEnum.string},
 				{id: "entity_datapointTitle", dataType: tableau.dataTypeEnum.string},
@@ -33,7 +33,7 @@
 				{id: "entity_groupId", dataType: tableau.dataTypeEnum.int},
 				{id: "entity_groupName", dataType: tableau.dataTypeEnum.string},
 				{id: "entity_notes", dataType: tableau.dataTypeEnum.string},
-				{id: "entity_creationDate", dataType: tableau.dataTypeEnum.string},
+				{id: "entity_creationDate", dataType: tableau.dataTypeEnum.datetime},
 				{id: "entity_destinationUrl", dataType: tableau.dataTypeEnum.string},
 				{id: "entity_trackingCode", dataType: tableau.dataTypeEnum.string},
 				{id: "location_country", dataType: tableau.dataTypeEnum.string},
@@ -61,6 +61,15 @@
 
 		var startDate = conData.startDate.replace(/-/g, ""),
 		    endDate = conData.endDate.replace(/-/g, "");
+
+		function strToDate(str) {
+			try {
+				return new Date(str.substring(0, 4) + "-" + str.substring(4, 6) + "-" + str.substring(6, 8) +
+					"T" + str.substring(8, 10) + ":" + str.substring(10, 12) + ":" + str.substring(12, 14));
+			} catch(e) {
+				return null;
+			}
+		}
 		
 		var getFetches = [];
 		var getFetch = new Promise(function(resolve, reject)
@@ -81,7 +90,7 @@
 							tableData.push({
 								"id": el.id,
 								"queryParams": el.queryParams,
-								"accessTime": el.accessTime,
+								"accessTime": strToDate(el.accessTime),
 								"entity_datapointId": el.entity.datapointId,
 								"entity_datapointName": el.entity.datapointName,
 								"entity_datapointTitle": el.entity.datapointTitle,
@@ -89,7 +98,7 @@
 								"entity_groupId": el.entity.groupId,
 								"entity_groupName": el.entity.groupName,
 								"entity_notes": el.entity.notes,
-								"entity_creationDate": el.entity.creationDate,
+								"entity_creationDate": strToDate(el.entity.creationDate),
 								"entity_destinationUrl": el.entity.destinationUrl,
 								"entity_trackingCode": el.entity.trackingCode,
 								"location_country": el.location.country,
@@ -122,19 +131,19 @@
 				endDate: $('#end-date-one').val().trim()
 			};
 		
-		// Simple date validation: Call the getDate function on the date object created
-		function isValidDate(dateStr) {
-			var d = new Date(dateStr);
-			return !isNaN(d.getDate());
-		}
+			// Simple date validation: Call the getDate function on the date object created
+			function isValidDate(dateStr) {
+				var d = new Date(dateStr);
+				return !isNaN(d.getDate());
+			}
 
-		if (isValidDate(dataObj.startDate) && isValidDate(dataObj.endDate)) {
-			tableau.connectionName = "ClickMeter";
-			tableau.connectionData = JSON.stringify(dataObj);
-			tableau.submit();
-		} else {
-			$('#errorMsg').html("Enter valid dates. For example, 2019-07-24.");
-		}
+			if (isValidDate(dataObj.startDate) && isValidDate(dataObj.endDate)) {
+				tableau.connectionName = "ClickMeter";
+				tableau.connectionData = JSON.stringify(dataObj);
+				tableau.submit();
+			} else {
+				$('#errorMsg').html("Enter valid dates. For example, 2019-07-24.");
+			}
 		
 		});
 	});

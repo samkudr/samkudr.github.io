@@ -75,41 +75,48 @@
 		var getFetch = new Promise(function(resolve, reject)
 			{
 				var requestUrl = "http://apiv2.clickmeter.com/hits?authKey=" + conData.authKey + "&timeframe=custom&fromDay=" + startDate + "&toDay=" + endDate;
-				$.ajax({
-					url: requestUrl,
-					type: 'GET',
-					dataType: 'json',
-					error: function(jqXHR, textStatus, errorThrown) {
-						tableau.log("Fetch error: " + errorThrown);
-						resolve();
-					},
-					success: function(resp) {
-						var respData = resp.hits, tableData = [];
-						for (var i = 0, len = respData.length; i < len; i++) {
-							var el = respData[i];
-							tableData.push({
-								"id": el.id,
-								"queryParams": el.queryParams,
-								"accessTime": strToDate(el.accessTime),
-								"entity_datapointId": el.entity.datapointId,
-								"entity_datapointName": el.entity.datapointName,
-								"entity_datapointTitle": el.entity.datapointTitle,
-								"entity_datapointType": el.entity.datapointType,
-								"entity_groupId": el.entity.groupId,
-								"entity_groupName": el.entity.groupName,
-								"entity_notes": el.entity.notes,
-								"entity_creationDate": strToDate(el.entity.creationDate),
-								"entity_destinationUrl": el.entity.destinationUrl,
-								"entity_trackingCode": el.entity.trackingCode,
-								"location_country": el.location.country,
-								"location_city": el.location.city,
-								"location_region": el.location.region								
-							});
+				function retrieveData(offset) {
+					var requestUrlOffset = offset ? requestUrl + "&offset=" + offset : requestUrl;
+					$.ajax({
+						url: requestUrlOffset,
+						type: 'GET',
+						dataType: 'json',
+						error: function(jqXHR, textStatus, errorThrown) {
+							tableau.log("Fetch error: " + errorThrown);
+							resolve();
+						},
+						success: function(resp) {
+							var respData = resp.hits, tableData = [];
+							for (var i = 0, len = respData.length; i < len; i++) {
+								var el = respData[i];
+								tableData.push({
+									"id": el.id,
+									"queryParams": el.queryParams,
+									"accessTime": strToDate(el.accessTime),
+									"entity_datapointId": el.entity.datapointId,
+									"entity_datapointName": el.entity.datapointName,
+									"entity_datapointTitle": el.entity.datapointTitle,
+									"entity_datapointType": el.entity.datapointType,
+									"entity_groupId": el.entity.groupId,
+									"entity_groupName": el.entity.groupName,
+									"entity_notes": el.entity.notes,
+									"entity_creationDate": strToDate(el.entity.creationDate),
+									"entity_destinationUrl": el.entity.destinationUrl,
+									"entity_trackingCode": el.entity.trackingCode,
+									"location_country": el.location.country,
+									"location_city": el.location.city,
+									"location_region": el.location.region								
+								});
+							}
+							table.appendRows(tableData);
+
+							if (resp.lastKey) retrieveData(resp.lastKey);
+							else resolve();
 						}
-						table.appendRows(tableData);
-						resolve();
-					}
-				});
+					});
+				}
+
+				retrieveData(null);
 			});
 		getFetches.push(getFetch);
 		Promise.all(getFetches).then(function(values){ doneCallback(); });

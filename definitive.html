@@ -354,14 +354,20 @@
 	myConnector.getData = function (table, doneCallback) {
 		var conData = JSON.parse(tableau.connectionData);
 		var defIds = conData["defIds"];
+		var zips = conData["zips"];
 		var bearer = conData["access_token"];
+
 		
-		var defIdsA = defIds.trim().split(",");
-		if (defIdsA.length == 0)
+		var defIdsA = defIds.trim().split(",").filter(el => el.trim() != "");
+		var zipsA = zips.trim().split(",").filter(el => el.trim() != "");
+		if (defIdsA.length == 0 && zipsA.length == 0)
 		{
-			tableau.abortWithError("Please define at least one Definitive ID.");
+			tableau.abortWithError("Please define at least one Definitive ID or Zip.");
 			return;
 		}
+
+		defIdsA.forEach((el, i, ar) => ar[i] = el.trim());
+		zipsA.forEach((el, i, ar) => ar[i] = el.trim());
 
 		var expandSuffix = "";
 		if (table.tableInfo.id == "Hospital")
@@ -379,44 +385,80 @@
 			tableau.abortWithError("Unknown table id.");
 			return;
 		}
-		
-		var getFetches = [];
-		for (var defIdsI = 0; defIdsI < defIdsA.length; defIdsI++)
-		{
-			var defId = defIdsA[defIdsI];
-			var getFetch = new Promise(function(resolve, reject)
-				{
-					var requestUrl = "https://api.defhc.com/v4/odata-v4/Hospitals(" + defId.trim() + ")" + expandSuffix;
-					$.ajax({
-						url: requestUrl,
-						type: 'GET',
-						dataType: 'json',
-						_hospId: defId,
-						beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
-						error: function(jqXHR, textStatus, errorThrown){
-							if (table.tableInfo.id == "Hospital")
-								table.appendRows([{"Id": this["_hospId"], "Name": "Wrong ID"}]);
-							tableau.log("Fetch error: " + errorThrown);
-							resolve();
-							},
-						success: function(requestData){
-							if (table.tableInfo.id == "Hospital")
-								table.appendRows([requestData]);
-							else if (table.tableInfo.id == "Executive")
-								table.appendRows(requestData["Executives"]);
-							else if (table.tableInfo.id == "HospitalFinancial")
-								table.appendRows([requestData["Fin"]]);
-							else if (table.tableInfo.id == "RFPs")
-								table.appendRows(requestData["RFPs"]);
-							else if (table.tableInfo.id == "NewsItems")
-								table.appendRows(requestData["NewsItems"]);
-							resolve();
-							}
-						});
-				});
-			getFetches.push(getFetch);
+
+
+		// filter for Hospital ids
+		const kUrl = "https://api.defhc.com/v4/odata-v4/Hospitals";
+		var filter = "";
+		if (defIdsA.length > 0) filter += "(Id eq " + defIdsA.join(" or Id eq ") + ")";
+		if (zipsA.length > 0) {
+			if (filter != "") filter += " and ";
+			filter += "(Zip eq '" + zipsA.join("' or Zip eq '") + "')";
 		}
-		Promise.all(getFetches).then(function(values){ doneCallback(); });
+		var idPromise = new Promise(function(resolve, reject) {
+			$.ajax({
+				url: kUrl + "?$select=Id&$filter=" + filter,
+				type: 'GET',
+				dataType: 'json',
+				beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
+				error: function(jqXHR, textStatus, errorThrown){
+					tableau.log("Hospital IDs fetch error: " + errorThrown);
+					resolve([]);
+					},
+				success: function(requestData) {
+					var ids = [];
+					for (obj of requestData.value) ids.push(obj.Id);
+					resolve(ids);
+					}
+				});
+		});
+
+		idPromise.then(function(defIdsA) {
+			if (defIdsA.length == 0) {
+				tableau.log("nothing found");
+				doneCallback();
+				return;
+			}
+
+			var getFetches = [];
+			for (var defIdsI = 0; defIdsI < defIdsA.length; defIdsI++)
+			{
+				var defId = defIdsA[defIdsI];
+				var getFetch = new Promise(function(resolve, reject)
+					{
+						var requestUrl = kUrl + "(" + defId + ")" + expandSuffix;
+						$.ajax({
+							url: requestUrl,
+							type: 'GET',
+							dataType: 'json',
+							_hospId: defId,
+							beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
+							error: function(jqXHR, textStatus, errorThrown){
+								if (table.tableInfo.id == "Hospital")
+									table.appendRows([{"Id": this["_hospId"], "Name": "Wrong ID"}]);
+								tableau.log("Fetch error: " + errorThrown);
+								resolve();
+								},
+							success: function(requestData){
+								if (table.tableInfo.id == "Hospital")
+									table.appendRows([requestData]);
+								else if (table.tableInfo.id == "Executive")
+									table.appendRows(requestData["Executives"]);
+								else if (table.tableInfo.id == "HospitalFinancial")
+									table.appendRows([requestData["Fin"]]);
+								else if (table.tableInfo.id == "RFPs")
+									table.appendRows(requestData["RFPs"]);
+								else if (table.tableInfo.id == "NewsItems")
+									table.appendRows(requestData["NewsItems"]);
+								resolve();
+								}
+							});
+					});
+				getFetches.push(getFetch);
+			}
+			Promise.all(getFetches).then(function(values){ doneCallback(); });
+
+		});
 	};
 
 	tableau.registerConnector(myConnector);
@@ -425,6 +467,7 @@
 		$("#userName")[0].value = "";
 		$("#userPassword")[0].value = "";
 		$("#defIds")[0].value = "";
+		$("#Zips")[0].value = "";
 
 
 		$("#submitButton").click(function () {
@@ -432,6 +475,7 @@
 		var userName = $("#userName").val().trim();
 		var userPassword = $("#userPassword").val().trim();
 		var defIds = $("#defIds").val();
+		var zips = $("#Zips").val();
 		$.ajax({
 			url: 'https://api.defhc.com/v4/token',
 			type: 'POST',
@@ -440,6 +484,7 @@
 			error: function() { tableau.abortWithError('Authentication error!'); },
 			success: function(data) {
 				data['defIds'] = defIds;
+				data['zips'] = zips;
 				tableau.connectionName = "Definitive Healthcare Feed";
 				tableau.connectionData = JSON.stringify(data);
 				tableau.submit();
@@ -463,6 +508,7 @@
 			<label class="control-label">User Name</label><input type="text" id="userName" class="form-control">
 			<label class="control-label">Password</label><input type="password" id="userPassword" class="form-control">
 			<label class="control-label">Definitive IDs (separate with comma)</label><input type="text" id="defIds" class="form-control">
+			<label class="control-label">Zips (separate with comma)</label><input type="text" id="Zips" class="form-control">
 			<button type="button" id="submitButton" class="btn btn-success" style="margin: 10px;">Get Data!</button>
 		</div>
 	</div>

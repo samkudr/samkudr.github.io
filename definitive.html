@@ -353,21 +353,22 @@
 
 	myConnector.getData = function (table, doneCallback) {
 		var conData = JSON.parse(tableau.connectionData);
-		var defIds = conData["defIds"];
-		var zips = conData["zips"];
+		var defIds = conData["defIds"], zips = conData["zips"], states = conData["states"], userFilter = conData["filter"].trim();
 		var bearer = conData["access_token"];
 
 		
 		var defIdsA = defIds.trim().split(",").filter(el => el.trim() != "");
 		var zipsA = zips.trim().split(",").filter(el => el.trim() != "");
-		if (defIdsA.length == 0 && zipsA.length == 0)
+		var statesA = states.trim().split(",").filter(el => el.trim() != "");
+		if (defIdsA.length == 0 && zipsA.length == 0 && statesA.length == 0 & userFilter == "")
 		{
-			tableau.abortWithError("Please define at least one Definitive ID or Zip.");
+			tableau.abortWithError("Please define at least one Definitive ID, Zip, State or Filter.");
 			return;
 		}
 
 		defIdsA.forEach((el, i, ar) => ar[i] = el.trim());
 		zipsA.forEach((el, i, ar) => ar[i] = el.trim());
+		statesA.forEach((el, i, ar) => ar[i] = el.trim());
 
 		var expandSuffix = "";
 		if (table.tableInfo.id == "Hospital")
@@ -394,6 +395,14 @@
 		if (zipsA.length > 0) {
 			if (filter != "") filter += " and ";
 			filter += "(Zip eq '" + zipsA.join("' or Zip eq '") + "')";
+		}
+		if (statesA.length > 0) {
+			if (filter != "") filter += " and ";
+			filter += "(contains(State, '" + statesA.join("') or contains(State, '") + "'))";
+		}
+		if (userFilter != "") {
+			if (filter != "") filter += " and ";
+			filter += "(" + userFilter + ")";
 		}
 		var idPromise = new Promise(function(resolve, reject) {
 			$.ajax({
@@ -468,6 +477,8 @@
 		$("#userPassword")[0].value = "";
 		$("#defIds")[0].value = "";
 		$("#Zips")[0].value = "";
+		$("#States")[0].value = "";
+		$("#Filter")[0].value = "";
 
 
 		$("#submitButton").click(function () {
@@ -476,6 +487,8 @@
 		var userPassword = $("#userPassword").val().trim();
 		var defIds = $("#defIds").val();
 		var zips = $("#Zips").val();
+		var states = $("#States").val();
+		var filter = $("#Filter").val();
 		$.ajax({
 			url: 'https://api.defhc.com/v4/token',
 			type: 'POST',
@@ -485,6 +498,8 @@
 			success: function(data) {
 				data['defIds'] = defIds;
 				data['zips'] = zips;
+				data['states'] = states;
+				data['filter'] = filter;
 				tableau.connectionName = "Definitive Healthcare Feed";
 				tableau.connectionData = JSON.stringify(data);
 				tableau.submit();
@@ -497,7 +512,15 @@
 })();
 </script>
 
+<style type="text/css">
+	p, ul {
+		text-align: left;
+	}
 
+	label {
+		margin-top: 1em;
+	}
+</style>
 </head>
 
 <body>
@@ -509,6 +532,17 @@
 			<label class="control-label">Password</label><input type="password" id="userPassword" class="form-control">
 			<label class="control-label">Definitive IDs (separate with comma)</label><input type="text" id="defIds" class="form-control">
 			<label class="control-label">Zips (separate with comma)</label><input type="text" id="Zips" class="form-control">
+			<label class="control-label">States (separate with comma)</label><input type="text" id="States" class="form-control">
+			<label class="control-label">Filter</label><input type="text" id="Filter" class="form-control">
+			<p>Use column names from the Hospital table and single quotes only.<br>
+			The <i>$filter</i> syntax is available <a href="http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_CommonExpressionSyntax" target="_blank">here.</a><br>
+			Examples:</p>
+			<ul>
+				<li>Id eq 4703</li>
+				<li>Zip eq '80112' and contains(State, 'CO')</li>
+				<li>State ne 'TX' and Id eq 4703</li>
+				<li>NumBeds gt 500 and contains(Name, 'Mass')</li>
+			</ul>
 			<button type="button" id="submitButton" class="btn btn-success" style="margin: 10px;">Get Data!</button>
 		</div>
 	</div>

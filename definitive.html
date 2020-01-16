@@ -352,23 +352,21 @@
 	};
 
 	myConnector.getData = function (table, doneCallback) {
-		var conData = JSON.parse(tableau.connectionData);
-		var defIds = conData["defIds"], zips = conData["zips"], states = conData["states"], userFilter = conData["filter"].trim();
-		var bearer = conData["access_token"];
-
-		
-		var defIdsA = defIds.trim().split(",").filter(el => el.trim() != "");
-		var zipsA = zips.trim().split(",").filter(el => el.trim() != "");
-		var statesA = states.trim().split(",").filter(el => el.trim() != "");
-		if (defIdsA.length == 0 && zipsA.length == 0 && statesA.length == 0 & userFilter == "")
-		{
-			tableau.abortWithError("Please define at least one Definitive ID, Zip, State or Filter.");
-			return;
+		function makeArray(val) {
+			var res = val.split(",");
+			res.forEach((el, i, ar) => ar[i] = el.trim());
+			return res.filter(el => el != "");
 		}
 
-		defIdsA.forEach((el, i, ar) => ar[i] = el.trim());
-		zipsA.forEach((el, i, ar) => ar[i] = el.trim());
-		statesA.forEach((el, i, ar) => ar[i] = el.trim());
+		var conData = JSON.parse(tableau.connectionData);
+		var defIdsA = makeArray(conData.defIds), zipsA = makeArray(conData.zips), statesA = makeArray(conData.states), userFilter = conData.filter.trim(), networkIdsA = makeArray(conData.networkIds), networkParentIdsA = makeArray(conData.networkParentIds);
+		var bearer = conData.access_token;
+
+		if (defIdsA.length == 0 && zipsA.length == 0 && statesA.length == 0 && userFilter == "" && networkIdsA.length == 0 && networkParentIdsA.length == 0)
+		{
+			tableau.abortWithError("Please, define at least one search option.");
+			return;
+		}
 
 		var expandSuffix = "";
 		if (table.tableInfo.id == "Hospital")
@@ -389,21 +387,34 @@
 
 
 		// filter for Hospital ids
+		function makeIntFilter(vals, fname) {
+			return "(" + fname + " eq " + vals.join(" or " + fname + " eq ") + ")";
+		}
+
 		const kUrl = "https://api.defhc.com/v4/odata-v4/Hospitals";
 		var filter = "";
-		if (defIdsA.length > 0) filter += "(Id eq " + defIdsA.join(" or Id eq ") + ")";
+		if (defIdsA.length > 0) filter += makeIntFilter(defIdsA, "Id");
 		if (zipsA.length > 0) {
 			if (filter != "") filter += " and ";
-			filter += "(Zip eq '" + zipsA.join("' or Zip eq '") + "')";
+			filter += makeIntFilter(zipsA, "Zip");
 		}
 		if (statesA.length > 0) {
 			if (filter != "") filter += " and ";
 			filter += "(contains(State, '" + statesA.join("') or contains(State, '") + "'))";
 		}
+		if (networkIdsA.length > 0) {
+			if (filter != "") filter += " and ";
+			filter += makeIntFilter(networkIdsA, "NetworkId");
+		}
+		if (networkParentIdsA.length > 0) {
+			if (filter != "") filter += " and ";
+			filter += makeIntFilter(networkParentIdsA, "NetworkParentId");
+		}
 		if (userFilter != "") {
 			if (filter != "") filter += " and ";
 			filter += "(" + userFilter + ")";
 		}
+		//tableau.log("filter = " + filter);
 		var idPromise = new Promise(function(resolve, reject) {
 			$.ajax({
 				url: kUrl + "?$select=Id&$filter=" + filter,
@@ -475,20 +486,22 @@
 	$(document).ready(function () {
 		$("#userName")[0].value = "";
 		$("#userPassword")[0].value = "";
-		$("#defIds")[0].value = "";
-		$("#Zips")[0].value = "";
-		$("#States")[0].value = "";
-		$("#Filter")[0].value = "";
 
 
 		$("#submitButton").click(function () {
 			
 		var userName = $("#userName").val().trim();
 		var userPassword = $("#userPassword").val().trim();
-		var defIds = $("#defIds").val();
-		var zips = $("#Zips").val();
-		var states = $("#States").val();
-		var filter = $("#Filter").val();
+		var inputData = {
+			defIds: $("#defIds").val(),
+			zips: $("#Zips").val(),
+			states: $("#States").val(),
+			filter: $("#Filter").val(),
+			networkIds: $("#NetworkIds").val(),
+			networkParentIds: $("#NetworkParentIds").val()
+		};
+		//tableau.log("inputData = " + JSON.stringify(inputData));
+
 		$.ajax({
 			url: 'https://api.defhc.com/v4/token',
 			type: 'POST',
@@ -496,10 +509,7 @@
 			data: 'grant_type=password&username=' + userName + '&password=' + userPassword,
 			error: function() { tableau.abortWithError('Authentication error!'); },
 			success: function(data) {
-				data['defIds'] = defIds;
-				data['zips'] = zips;
-				data['states'] = states;
-				data['filter'] = filter;
+				Object.assign(data, inputData);
 				tableau.connectionName = "Definitive Healthcare Feed";
 				tableau.connectionData = JSON.stringify(data);
 				tableau.submit();
@@ -518,7 +528,12 @@
 	}
 
 	label {
-		margin-top: 1em;
+		margin-top: 0.5em;
+		margin-bottom: 0;
+	}
+
+	.bigspace {
+		margin-top: 1.5em;
 	}
 </style>
 </head>
@@ -530,10 +545,12 @@
 		<div class="text-center col-md-4 col-md-offset-4">
 			<label class="control-label">User Name</label><input type="text" id="userName" class="form-control">
 			<label class="control-label">Password</label><input type="password" id="userPassword" class="form-control">
-			<label class="control-label">Definitive IDs (separate with comma)</label><input type="text" id="defIds" class="form-control">
-			<label class="control-label">Zips (separate with comma)</label><input type="text" id="Zips" class="form-control">
-			<label class="control-label">States (separate with comma)</label><input type="text" id="States" class="form-control">
-			<label class="control-label">Filter</label><input type="text" id="Filter" class="form-control">
+			<label class="control-label bigspace">Definitive IDs (separate with comma)</label><input type="text" id="defIds" class="form-control">
+			<label class="control-label">Zips</label><input type="text" id="Zips" class="form-control">
+			<label class="control-label">States</label><input type="text" id="States" class="form-control">
+			<label class="control-label">Network IDs</label><input type="text" id="NetworkIds" class="form-control">
+			<label class="control-label">Network Parent IDs</label><input type="text" id="NetworkParentIds" class="form-control">
+			<label class="control-label bigspace">Filter</label><input type="text" id="Filter" class="form-control">
 			<p>Use column names from the Hospital table and single quotes only.<br>
 			The <i>$filter</i> syntax is available <a href="http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_CommonExpressionSyntax" target="_blank">here.</a><br>
 			Examples:</p>
@@ -542,6 +559,7 @@
 				<li>Zip eq '80112' and contains(State, 'CO')</li>
 				<li>State ne 'TX' and Id eq 4703</li>
 				<li>NumBeds gt 500 and contains(Name, 'Mass')</li>
+				<li>NetworkId eq 4703 or NetworkId eq 513</li>
 			</ul>
 			<button type="button" id="submitButton" class="btn btn-success" style="margin: 10px;">Get Data!</button>
 		</div>

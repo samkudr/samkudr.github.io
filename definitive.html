@@ -390,29 +390,40 @@
 		function makeIntFilter(vals, fname) {
 			return "(" + fname + " eq " + vals.join(" or " + fname + " eq ") + ")";
 		}
+		
 
 		const kUrl = "https://api.defhc.com/v4/odata-v4/Hospitals";
-		var filter = "";
-		if (defIdsA.length > 0) filter += makeIntFilter(defIdsA, "Id");
+		var filterAnd = [], filterOr = [];
+		if (defIdsA.length > 0) filterAnd.push(makeIntFilter(defIdsA, "Id"));
 		if (zipsA.length > 0) {
-			if (filter != "") filter += " and ";
-			filter += makeIntFilter(zipsA, "Zip");
+			let flt = makeIntFilter(zipsA, "Zip");
+			if (conData.zips_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
 		}
 		if (statesA.length > 0) {
-			if (filter != "") filter += " and ";
-			filter += "(contains(State, '" + statesA.join("') or contains(State, '") + "'))";
+			let flt = "(contains(State, '" + statesA.join("') or contains(State, '") + "'))";
+			if (conData.states_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
 		}
 		if (networkIdsA.length > 0) {
-			if (filter != "") filter += " and ";
-			filter += makeIntFilter(networkIdsA, "NetworkId");
+			let flt = makeIntFilter(networkIdsA, "NetworkId");
+			if (conData.networkIds_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
 		}
 		if (networkParentIdsA.length > 0) {
-			if (filter != "") filter += " and ";
-			filter += makeIntFilter(networkParentIdsA, "NetworkParentId");
+			let flt = makeIntFilter(networkParentIdsA, "NetworkParentId");
+			if (conData.networkParentIds_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
 		}
 		if (userFilter != "") {
-			if (filter != "") filter += " and ";
-			filter += "(" + userFilter + ")";
+			let flt = "(" + userFilter + ")"
+			if (conData.filter_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
+		}
+		var filter = filterAnd.join(" and ");
+		if (filterOr.length > 0) {
+			if (filter != "") filter += " or ";
+			filter += filterOr.join(" or ");
 		}
 		//tableau.log("filter = " + filter);
 		var idPromise = new Promise(function(resolve, reject) {
@@ -494,11 +505,11 @@
 		var userPassword = $("#userPassword").val().trim();
 		var inputData = {
 			defIds: $("#defIds").val(),
-			zips: $("#Zips").val(),
-			states: $("#States").val(),
-			filter: $("#Filter").val(),
-			networkIds: $("#NetworkIds").val(),
-			networkParentIds: $("#NetworkParentIds").val()
+			zips: $("#Zips").val(), zips_Or: $("#Zips_Or").is(":checked"),
+			states: $("#States").val(), states_Or: $("#States_Or").is(":checked"),
+			filter: $("#Filter").val(), filter_Or: $("#Filter_Or").is(":checked"),
+			networkIds: $("#NetworkIds").val(), networkIds_Or: $("#NetworkIds_Or").is(":checked"),
+			networkParentIds: $("#NetworkParentIds").val(), networkParentIds_Or: $("#NetworkParentIds_Or").is(":checked")
 		};
 		//tableau.log("inputData = " + JSON.stringify(inputData));
 
@@ -535,6 +546,10 @@
 	.bigspace {
 		margin-top: 1.5em;
 	}
+
+	.conjunction {
+		color: gray;
+	}
 </style>
 </head>
 
@@ -545,12 +560,28 @@
 		<div class="text-center col-md-4 col-md-offset-4">
 			<label class="control-label">User Name</label><input type="text" id="userName" class="form-control">
 			<label class="control-label">Password</label><input type="password" id="userPassword" class="form-control">
-			<label class="control-label bigspace">Definitive IDs (separate with comma)</label><input type="text" id="defIds" class="form-control">
-			<label class="control-label">Zips</label><input type="text" id="Zips" class="form-control">
-			<label class="control-label">States</label><input type="text" id="States" class="form-control">
-			<label class="control-label">Network IDs</label><input type="text" id="NetworkIds" class="form-control">
-			<label class="control-label">Network Parent IDs</label><input type="text" id="NetworkParentIds" class="form-control">
-			<label class="control-label bigspace">Filter</label><input type="text" id="Filter" class="form-control">
+			<label class="control-label bigspace">Definitive IDs (separate with comma)</label>
+			<input type="text" id="defIds" class="form-control">
+			
+			<label class="control-label">Zips</label>
+			<label class="conjunction">( <input type="checkbox" id="Zips_Or">OR )</label>
+			<input type="text" id="Zips" class="form-control">
+			
+			<label class="control-label">States</label>
+			<label class="conjunction">( <input type="checkbox" id="States_Or">OR )</label>
+			<input type="text" id="States" class="form-control">
+			
+			<label class="control-label">Network IDs</label>
+			<label class="conjunction">( <input type="checkbox" id="NetworkIds_Or">OR )</label>
+			<input type="text" id="NetworkIds" class="form-control">
+			
+			<label class="control-label">Network Parent IDs</label>
+			<label class="conjunction">( <input type="checkbox" id="NetworkParentIds_Or">OR )</label>
+			<input type="text" id="NetworkParentIds" class="form-control">
+
+			<label class="control-label bigspace">Filter</label>
+			<label class="conjunction">( <input type="checkbox" id="Filter_Or">OR )</label>
+			<input type="text" id="Filter" class="form-control">
 			<p>Use column names from the Hospital table and single quotes only.<br>
 			The <i>$filter</i> syntax is available <a href="http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_CommonExpressionSyntax" target="_blank">here.</a><br>
 			Examples:</p>

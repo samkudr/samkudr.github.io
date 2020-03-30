@@ -352,17 +352,10 @@
 	};
 
 	myConnector.getData = function (table, doneCallback) {
-		function makeArray(val) {
-			var res = val.split(",");
-			res.forEach((el, i, ar) => ar[i] = el.trim());
-			return res.filter(el => el != "");
-		}
-
 		var conData = JSON.parse(tableau.connectionData);
-		var defIdsA = makeArray(conData.defIds), zipsA = makeArray(conData.zips), statesA = makeArray(conData.states), userFilter = conData.filter.trim(), networkIdsA = makeArray(conData.networkIds), networkParentIdsA = makeArray(conData.networkParentIds);
 		var bearer = conData.access_token;
 
-		if (defIdsA.length == 0 && zipsA.length == 0 && statesA.length == 0 && userFilter == "" && networkIdsA.length == 0 && networkParentIdsA.length == 0)
+		if (conData.defIdsA.length == 0 && conData.zipsA.length == 0 && conData.statesA.length == 0 && conData.filter == "" && conData.networkIdsA.length == 0 && conData.networkParentIdsA.length == 0)
 		{
 			tableau.abortWithError("Please, define at least one search option.");
 			return;
@@ -386,46 +379,9 @@
 		}
 
 
-		// filter for Hospital ids
-		function makeIntFilter(vals, fname) {
-			return "(" + fname + " eq " + vals.join(" or " + fname + " eq ") + ")";
-		}
-		
-
+		// filter
 		const kUrl = "https://api.defhc.com/v4/odata-v4/Hospitals";
-		var filterAnd = [], filterOr = [];
-		if (defIdsA.length > 0) filterAnd.push(makeIntFilter(defIdsA, "Id"));
-		if (zipsA.length > 0) {
-			let flt = makeIntFilter(zipsA, "Zip");
-			if (conData.zips_Or) filterOr.push(flt);
-			else filterAnd.push(flt);
-		}
-		if (statesA.length > 0) {
-			let flt = "(contains(State, '" + statesA.join("') or contains(State, '") + "'))";
-			if (conData.states_Or) filterOr.push(flt);
-			else filterAnd.push(flt);
-		}
-		if (networkIdsA.length > 0) {
-			let flt = makeIntFilter(networkIdsA, "NetworkId");
-			if (conData.networkIds_Or) filterOr.push(flt);
-			else filterAnd.push(flt);
-		}
-		if (networkParentIdsA.length > 0) {
-			let flt = makeIntFilter(networkParentIdsA, "NetworkParentId");
-			if (conData.networkParentIds_Or) filterOr.push(flt);
-			else filterAnd.push(flt);
-		}
-		if (userFilter != "") {
-			let flt = "(" + userFilter + ")"
-			if (conData.filter_Or) filterOr.push(flt);
-			else filterAnd.push(flt);
-		}
-		var filter = filterAnd.join(" and ");
-		if (filterOr.length > 0) {
-			if (filter != "") filter += " or ";
-			filter += filterOr.join(" or ");
-		}
-		//tableau.log("filter = " + filter);
+		var filter = makeFilter(conData);
 		var idPromise = new Promise(function(resolve, reject) {
 			$.ajax({
 				url: kUrl + "?$select=Id&$filter=" + filter,
@@ -503,14 +459,7 @@
 			
 		var userName = $("#userName").val().trim();
 		var userPassword = $("#userPassword").val().trim();
-		var inputData = {
-			defIds: $("#defIds").val(),
-			zips: $("#Zips").val(), zips_Or: $("#Zips_Or").is(":checked"),
-			states: $("#States").val(), states_Or: $("#States_Or").is(":checked"),
-			filter: $("#Filter").val(), filter_Or: $("#Filter_Or").is(":checked"),
-			networkIds: $("#NetworkIds").val(), networkIds_Or: $("#NetworkIds_Or").is(":checked"),
-			networkParentIds: $("#NetworkParentIds").val(), networkParentIds_Or: $("#NetworkParentIds_Or").is(":checked")
-		};
+		var inputData = getInputData();
 		//tableau.log("inputData = " + JSON.stringify(inputData));
 
 		$.ajax({
@@ -528,7 +477,78 @@
 			});
 		
 		});
+
+
+		$('.form-control, [type=checkbox]').on("input", function() {
+			try {
+				$('#querytext').text(makeFilter(getInputData()));
+			} catch(e) {
+				$('#querytext').text("");
+			}
+		});
 	});
+
+
+
+	function getInputData() {
+		function makeArray(val) {
+			var res = val.split(",");
+			res.forEach((el, i, ar) => ar[i] = el.trim());
+			return res.filter(el => el != "");
+		}
+
+		return {
+			defIdsA: makeArray($("#defIds").val()),
+			zipsA: makeArray($("#Zips").val()), zips_Or: $("#Zips_Or").is(":checked"),
+			statesA: makeArray($("#States").val()), states_Or: $("#States_Or").is(":checked"),
+			filter: $("#Filter").val().trim(), filter_Or: $("#Filter_Or").is(":checked"),
+			networkIdsA: makeArray($("#NetworkIds").val()), networkIds_Or: $("#NetworkIds_Or").is(":checked"),
+			networkParentIdsA: makeArray($("#NetworkParentIds").val()), networkParentIds_Or: $("#NetworkParentIds_Or").is(":checked")
+		};
+	}
+
+
+
+	function makeFilter(params) {
+		function makeIntFilter(vals, fname) {
+			return "(" + fname + " eq " + vals.join(" or " + fname + " eq ") + ")";
+		}
+		
+		var filterAnd = [], filterOr = [];
+		if (params.defIdsA.length > 0) filterAnd.push(makeIntFilter(params.defIdsA, "Id"));
+		if (params.zipsA.length > 0) {
+			let flt = makeIntFilter(params.zipsA, "Zip");
+			if (params.zips_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
+		}
+		if (params.statesA.length > 0) {
+			let flt = "(contains(State, '" + params.statesA.join("') or contains(State, '") + "'))";
+			if (params.states_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
+		}
+		if (params.networkIdsA.length > 0) {
+			let flt = makeIntFilter(params.networkIdsA, "NetworkId");
+			if (params.networkIds_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
+		}
+		if (params.networkParentIdsA.length > 0) {
+			let flt = makeIntFilter(params.networkParentIdsA, "NetworkParentId");
+			if (params.networkParentIds_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
+		}
+		if (params.filter != "") {
+			let flt = "(" + params.filter + ")"
+			if (params.filter_Or) filterOr.push(flt);
+			else filterAnd.push(flt);
+		}
+
+		var filter = filterAnd.join(" and ");
+		if (filterOr.length > 0) {
+			if (filter != "") filter += " or ";
+			filter += filterOr.join(" or ");
+		}
+		return filter;
+	}
 
 })();
 </script>
@@ -549,6 +569,18 @@
 
 	.conjunction {
 		color: gray;
+	}
+
+	.querytext {
+		text-align: left;
+	}
+
+	.querytext label {
+		font-size: 90%;
+		font-style: italic;
+		font-weight: normal;
+		font-family: Menlo;
+		background-color: rgb(230, 230, 230);
 	}
 </style>
 </head>
@@ -582,6 +614,11 @@
 			<label class="control-label bigspace">Filter</label>
 			<label class="conjunction">( <input type="checkbox" id="Filter_Or">OR )</label>
 			<input type="text" id="Filter" class="form-control">
+
+			<p class="querytext bigspace">
+				<label id="querytext"></label>
+			</p>
+
 			<p>Use column names from the Hospital table and single quotes only.<br>
 			The <i>$filter</i> syntax is available <a href="http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html#sec_CommonExpressionSyntax" target="_blank">here.</a><br>
 			Examples:</p>

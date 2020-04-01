@@ -481,7 +481,13 @@
 
 		$('.form-control, [type=checkbox]').on("input", function() {
 			try {
-				$('#querytext').text(makeFilter(getInputData()));
+				let inputData = getInputData();
+
+				let valueCount = 0;
+				Object.values(inputData).forEach(val => {if (val instanceof Array) valueCount += val.length});
+				$('#querytext').toggleClass("warning", valueCount > 20);
+
+				$('#querytext').text(makeFilter(inputData));
 			} catch(e) {
 				$('#querytext').text("");
 			}
@@ -581,6 +587,10 @@
 		font-weight: normal;
 		font-family: Menlo;
 		background-color: rgb(230, 230, 230);
+	}
+
+	.querytext .warning {
+		background-color: rgb(230, 150, 0);
 	}
 </style>
 </head>

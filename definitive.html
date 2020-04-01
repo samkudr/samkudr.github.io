@@ -389,7 +389,7 @@
 				dataType: 'json',
 				beforeSend: function(xhr){ xhr.setRequestHeader("Authorization", "Bearer " + bearer);  },
 				error: function(jqXHR, textStatus, errorThrown){
-					tableau.log("Hospital IDs fetch error: " + errorThrown);
+					tableau.log("Fetch error result: " + jqXHR.responseText);
 					resolve([]);
 					},
 				success: function(requestData) {
@@ -402,7 +402,7 @@
 
 		idPromise.then(function(defIdsA) {
 			if (defIdsA.length == 0) {
-				tableau.log("nothing found");
+				tableau.log("Nothing found.");
 				doneCallback();
 				return;
 			}

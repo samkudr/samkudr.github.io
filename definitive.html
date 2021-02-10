@@ -348,7 +348,31 @@
 			]
 		};
 
-		schemaCallback([hospitalTable, executiveTable, financialTable, rfpTable, newsItemsTable]);
+		var techsTable = {
+			id: "Techs",
+			columns: [
+				{id: "ImplmntId", dataType: tableau.dataTypeEnum.int},
+				{id: "hospId", dataType: tableau.dataTypeEnum.int},
+				{id: "TechCat", dataType: tableau.dataTypeEnum.string},
+				{id: "TechVndr", dataType: tableau.dataTypeEnum.string},
+				{id: "TechMdule", dataType: tableau.dataTypeEnum.string},
+				{id: "TechAplicn", dataType: tableau.dataTypeEnum.string},
+				{id: "TechnMduleAplcn", dataType: tableau.dataTypeEnum.string},
+				{id: "TechVndrAplcn", dataType: tableau.dataTypeEnum.string},
+				{id: "TechYrImplmnted", dataType: tableau.dataTypeEnum.string},
+				{id: "SrcOfIntel", dataType: tableau.dataTypeEnum.string},
+				{id: "DtEntrd", dataType: tableau.dataTypeEnum.datetime},
+				{id: "EvntId", dataType: tableau.dataTypeEnum.int},
+				{id: "TechUpcmngPlns", dataType: tableau.dataTypeEnum.string},
+				{id: "McareMUFlg", dataType: tableau.dataTypeEnum.string},
+				{id: "RltdNwsLnk", dataType: tableau.dataTypeEnum.string},
+				{id: "TechMnthImplmntd", dataType: tableau.dataTypeEnum.string},
+				{id: "TechPrevVndr", dataType: tableau.dataTypeEnum.string},
+				{id: "TechYrImplmntdExprt", dataType: tableau.dataTypeEnum.int}
+			]
+		};
+
+		schemaCallback([hospitalTable, executiveTable, financialTable, rfpTable, newsItemsTable, techsTable]);
 	};
 
 	myConnector.getData = function (table, doneCallback) {
@@ -372,6 +396,8 @@
 			expandSuffix = "?$expand=RFPs";
 		else if (table.tableInfo.id == "NewsItems")
 			expandSuffix = "?$expand=NewsItems";
+		else if (table.tableInfo.id == "Techs")
+			expandSuffix = "?$expand=Techs";
 		else
 		{
 			tableau.abortWithError("Unknown table id.");
@@ -437,6 +463,8 @@
 									table.appendRows(requestData["RFPs"]);
 								else if (table.tableInfo.id == "NewsItems")
 									table.appendRows(requestData["NewsItems"]);
+								else if (table.tableInfo.id == "Techs")
+									table.appendRows(requestData["Techs"]);
 								resolve();
 								}
 							});
